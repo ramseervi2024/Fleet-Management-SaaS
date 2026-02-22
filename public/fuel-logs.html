@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Logs — Fleet Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🚛</div>
+                <div><span id="sidebar-tenant-name">Fleet Co.</span><small>Fleet Management</small></div>
+            </div>
+            <nav class="sidebar-nav">
+                <p class="nav-section-label">Overview</p>
+                <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+                <p class="nav-section-label">Fleet</p>
+                <a href="/vehicles.html" class="nav-item"><span class="nav-icon">🚗</span> Vehicles</a>
+                <a href="/drivers.html" class="nav-item"><span class="nav-icon">👤</span> Drivers</a>
+                <a href="/trips.html" class="nav-item"><span class="nav-icon">🗺️</span> Trips</a>
+                <p class="nav-section-label">Logs</p>
+                <a href="/maintenance.html" class="nav-item"><span class="nav-icon">🔧</span> Maintenance</a>
+                <a href="/fuel-logs.html" class="nav-item active"><span class="nav-icon">⛽</span> Fuel Logs</a>
+                <p class="nav-section-label">System</p>
+                <a href="/api-docs" target="_blank" class="nav-item"><span class="nav-icon">📋</span> API Docs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="sidebar-user-avatar">U</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="user-name" id="sidebar-user-name">...</div>
+                        <div class="user-role" id="sidebar-user-role">role</div>
+                    </div>
+                    <button onclick="auth.logout()"
+                        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">⏻</button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger" id="hamburger-btn">☰</button>
+                    <h1 class="page-title">Fuel Logs</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Fuel Log</button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Vehicle</th>
+                                <th>Driver</th>
+                                <th>Fuel Type</th>
+                                <th>Quantity</th>
+                                <th>Price/Unit</th>
+                                <th>Total Cost</th>
+                                <th>Odometer</th>
+                                <th>Station</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fuel-body">
+                            <tr>
+                                <td colspan="10">
+                                    <div class="page-loader">
+                                        <div class="spinner"></div> Loading...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <span id="pagination-info"></span>
+                        <div class="pagination-btns" id="pagination-btns"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="fuel-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Add Fuel Log</h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-alert" class="alert"></div>
+            <form id="fuel-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Vehicle ID *</label>
+                        <input type="text" class="form-input" id="f-vehicle" placeholder="Vehicle ObjectId" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Driver ID</label>
+                        <input type="text" class="form-input" id="f-driver" placeholder="Driver ObjectId (optional)">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fuel Type *</label>
+                        <select class="form-select" id="f-fuel-type" required>
+                            <option value="diesel">Diesel</option>
+                            <option value="petrol">Petrol</option>
+                            <option value="electric">Electric</option>
+                            <option value="cng">CNG</option>
+                            <option value="lpg">LPG</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Unit</label>
+                        <select class="form-select" id="f-unit">
+                            <option value="liters">Liters</option>
+                            <option value="gallons">Gallons</option>
+                            <option value="kwh">kWh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Quantity *</label>
+                        <input type="number" class="form-input" id="f-qty" placeholder="45.5" required min="0"
+                            step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price per Unit *</label>
+                        <input type="number" class="form-input" id="f-price" placeholder="95.5" required min="0"
+                            step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Odometer (km) *</label>
+                        <input type="number" class="form-input" id="f-odometer" placeholder="56000" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="datetime-local" class="form-input" id="f-date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Station Name</label>
+                    <input type="text" class="form-input" id="f-station" placeholder="HP Petrol Pump - Andheri">
+                </div>
+                <div style="display:flex;gap:12px;margin-top:4px;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full" id="modal-save-btn">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireAuth();
+        let editId = null, currentPage = 1;
+
+        const fuelColors = { diesel: 'badge-blue', petrol: 'badge-amber', electric: 'badge-green', cng: 'badge-purple', lpg: 'badge-gray' };
+
+        async function loadFuelLogs(page = 1) {
+            currentPage = page;
+            const params = { page, limit: 20 };
+            const res = await api.get('/fuel-logs', params);
+            const tbody = document.getElementById('fuel-body');
+            if (!res?.ok) { toast.error('Failed to load fuel logs.'); return; }
+            const { logs, total, pages } = res.data;
+            if (!logs.length) {
+                tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">⛽</div><h3>No fuel logs yet</h3></div></td></tr>`;
+                document.getElementById('pagination-info').textContent = '';
+                document.getElementById('pagination-btns').innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td>${formatDate(l.date)}</td>
+      <td>${l.vehicle?.registrationNumber || '—'}</td>
+      <td>${l.driver?.name || '—'}</td>
+      <td><span class="badge ${fuelColors[l.fuelType] || 'badge-gray'}">${l.fuelType}</span></td>
+      <td>${l.quantity} ${l.unit}</td>
+      <td>$${l.pricePerUnit}</td>
+      <td class="fw-600 text-green">$${l.totalCost?.toFixed(2) || '—'}</td>
+      <td>${l.odometer?.toLocaleString()} km</td>
+      <td>${l.station?.name || '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="openModal('${l._id}')" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteFuelLog('${l._id}')" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+            document.getElementById('pagination-info').textContent = `${total} log${total === 1 ? '' : 's'}`;
+            const btns = document.getElementById('pagination-btns');
+            btns.innerHTML = '';
+            const p = document.createElement('button'); p.className = 'page-btn'; p.textContent = '←'; p.disabled = page === 1; p.onclick = () => loadFuelLogs(page - 1); btns.appendChild(p);
+            for (let i = 1; i <= pages; i++) { const b = document.createElement('button'); b.className = `page-btn ${i === page ? 'active' : ''}`; b.textContent = i; b.onclick = () => loadFuelLogs(i); btns.appendChild(b); }
+            const n = document.createElement('button'); n.className = 'page-btn'; n.textContent = '→'; n.disabled = page === pages; n.onclick = () => loadFuelLogs(page + 1); btns.appendChild(n);
+        }
+
+        async function openModal(id = null) {
+            editId = id;
+            document.getElementById('modal-title').textContent = id ? 'Edit Fuel Log' : 'Add Fuel Log';
+            document.getElementById('fuel-form').reset();
+            hideAlert('modal-alert');
+            if (id) {
+                const res = await api.get(`/fuel-logs/${id}`);
+                if (!res?.ok) { toast.error('Failed to load.'); return; }
+                const l = res.data.log;
+                document.getElementById('f-vehicle').value = l.vehicle?._id || l.vehicle || '';
+                document.getElementById('f-driver').value = l.driver?._id || l.driver || '';
+                document.getElementById('f-fuel-type').value = l.fuelType;
+                document.getElementById('f-unit').value = l.unit;
+                document.getElementById('f-qty').value = l.quantity;
+                document.getElementById('f-price').value = l.pricePerUnit;
+                document.getElementById('f-odometer').value = l.odometer;
+                document.getElementById('f-date').value = l.date ? l.date.slice(0, 16) : '';
+                document.getElementById('f-station').value = l.station?.name || '';
+            }
+            document.getElementById('fuel-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('fuel-modal').classList.add('hidden'); editId = null; }
+
+        document.getElementById('fuel-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('modal-save-btn');
+            setLoading(btn, true, 'Saving...');
+            hideAlert('modal-alert');
+            const data = {
+                vehicle: document.getElementById('f-vehicle').value,
+                driver: document.getElementById('f-driver').value || undefined,
+                fuelType: document.getElementById('f-fuel-type').value,
+                unit: document.getElementById('f-unit').value,
+                quantity: parseFloat(document.getElementById('f-qty').value),
+                pricePerUnit: parseFloat(document.getElementById('f-price').value),
+                odometer: parseInt(document.getElementById('f-odometer').value),
+                date: document.getElementById('f-date').value || undefined,
+                station: { name: document.getElementById('f-station').value },
+            };
+            const res = editId ? await api.put(`/fuel-logs/${editId}`, data) : await api.post('/fuel-logs', data);
+            setLoading(btn, false);
+            if (res?.ok) { toast.success('Saved!'); closeModal(); loadFuelLogs(currentPage); }
+            else showAlert('modal-alert', res?.data?.message || 'Failed to save.');
+        });
+
+        async function deleteFuelLog(id) {
+            if (!confirm('Delete this fuel log?')) return;
+            const res = await api.delete(`/fuel-logs/${id}`);
+            if (res?.ok) { toast.success('Deleted.'); loadFuelLogs(currentPage); }
+            else toast.error('Delete failed.');
+        }
+
+        loadFuelLogs();
+    </script>
+</body>
+
+</html>

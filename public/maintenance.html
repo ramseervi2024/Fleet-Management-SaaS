@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance — Fleet Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🚛</div>
+                <div><span id="sidebar-tenant-name">Fleet Co.</span><small>Fleet Management</small></div>
+            </div>
+            <nav class="sidebar-nav">
+                <p class="nav-section-label">Overview</p>
+                <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+                <p class="nav-section-label">Fleet</p>
+                <a href="/vehicles.html" class="nav-item"><span class="nav-icon">🚗</span> Vehicles</a>
+                <a href="/drivers.html" class="nav-item"><span class="nav-icon">👤</span> Drivers</a>
+                <a href="/trips.html" class="nav-item"><span class="nav-icon">🗺️</span> Trips</a>
+                <p class="nav-section-label">Logs</p>
+                <a href="/maintenance.html" class="nav-item active"><span class="nav-icon">🔧</span> Maintenance</a>
+                <a href="/fuel-logs.html" class="nav-item"><span class="nav-icon">⛽</span> Fuel Logs</a>
+                <p class="nav-section-label">System</p>
+                <a href="/api-docs" target="_blank" class="nav-item"><span class="nav-icon">📋</span> API Docs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="sidebar-user-avatar">U</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="user-name" id="sidebar-user-name">...</div>
+                        <div class="user-role" id="sidebar-user-role">role</div>
+                    </div>
+                    <button onclick="auth.logout()"
+                        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">⏻</button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger" id="hamburger-btn">☰</button>
+                    <h1 class="page-title">Maintenance Logs</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Log</button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="filter-bar">
+                    <select class="form-select" style="width:180px;" id="status-filter" onchange="loadMaintenance()">
+                        <option value="">All Status</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Scheduled</th>
+                                <th>Status</th>
+                                <th>Cost</th>
+                                <th>Vendor</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenance-body">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="page-loader">
+                                        <div class="spinner"></div> Loading...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="maintenance-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Add Maintenance Log</h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-alert" class="alert"></div>
+            <form id="maintenance-form">
+                <div class="form-group">
+                    <label class="form-label">Vehicle ID *</label>
+                    <input type="text" class="form-input" id="f-vehicle" placeholder="Vehicle ObjectId" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" id="f-type" required>
+                            <option value="">Select...</option>
+                            <option value="routine">Routine</option>
+                            <option value="repair">Repair</option>
+                            <option value="inspection">Inspection</option>
+                            <option value="oil-change">Oil Change</option>
+                            <option value="tire">Tire</option>
+                            <option value="brake">Brake</option>
+                            <option value="engine">Engine</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Scheduled Date *</label>
+                        <input type="date" class="form-input" id="f-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    <input type="text" class="form-input" id="f-title" placeholder="Engine oil + filter change"
+                        required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Cost (₹/$)</label>
+                        <input type="number" class="form-input" id="f-cost" placeholder="0" min="0">
+                    </div>
+                    <div class="form-group" id="f-status-wrap" style="display:none;">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="f-status">
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vendor Name</label>
+                    <input type="text" class="form-input" id="f-vendor" placeholder="ServicePro Garage">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="f-desc" placeholder="Brief description...">
+                </div>
+                <div style="display:flex;gap:12px;margin-top:4px;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full" id="modal-save-btn">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireAuth();
+        const statusBadge = { scheduled: 'badge-amber', 'in-progress': 'badge-blue', completed: 'badge-green', cancelled: 'badge-red' };
+        let editId = null;
+
+        async function loadMaintenance() {
+            const status = document.getElementById('status-filter').value;
+            const params = { limit: 30 };
+            if (status) params.status = status;
+            const res = await api.get('/maintenance', params);
+            const tbody = document.getElementById('maintenance-body');
+            if (!res?.ok) { toast.error('Failed to load.'); return; }
+            const { logs } = res.data;
+            if (!logs.length) {
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔧</div><h3>No maintenance logs</h3></div></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td>${l.vehicle?.registrationNumber || '—'} <br><span style="font-size:.75rem;color:var(--text-muted);">${l.vehicle?.make || ''} ${l.vehicle?.model || ''}</span></td>
+      <td><span class="fw-600">${l.title}</span></td>
+      <td><span class="badge badge-purple">${l.type}</span></td>
+      <td>${formatDate(l.scheduledDate)}</td>
+      <td><span class="badge ${statusBadge[l.status] || 'badge-gray'}">${l.status}</span></td>
+      <td>${l.cost ? '$' + l.cost.toLocaleString() : '—'}</td>
+      <td>${l.vendor?.name || '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="openModal('${l._id}')" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMaintenance('${l._id}')" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+        }
+
+        async function openModal(id = null) {
+            editId = id;
+            document.getElementById('modal-title').textContent = id ? 'Edit Maintenance Log' : 'Add Maintenance Log';
+            document.getElementById('maintenance-form').reset();
+            document.getElementById('f-status-wrap').style.display = id ? 'block' : 'none';
+            hideAlert('modal-alert');
+            if (id) {
+                const res = await api.get(`/maintenance/${id}`);
+                if (!res?.ok) { toast.error('Failed to load.'); return; }
+                const l = res.data.log;
+                document.getElementById('f-vehicle').value = l.vehicle?._id || l.vehicle || '';
+                document.getElementById('f-type').value = l.type;
+                document.getElementById('f-date').value = l.scheduledDate ? l.scheduledDate.split('T')[0] : '';
+                document.getElementById('f-title').value = l.title;
+                document.getElementById('f-cost').value = l.cost || '';
+                document.getElementById('f-status').value = l.status;
+                document.getElementById('f-vendor').value = l.vendor?.name || '';
+                document.getElementById('f-desc').value = l.description || '';
+            }
+            document.getElementById('maintenance-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('maintenance-modal').classList.add('hidden'); editId = null; }
+
+        document.getElementById('maintenance-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('modal-save-btn');
+            setLoading(btn, true, 'Saving...');
+            hideAlert('modal-alert');
+            const data = {
+                vehicle: document.getElementById('f-vehicle').value,
+                type: document.getElementById('f-type').value,
+                scheduledDate: document.getElementById('f-date').value,
+                title: document.getElementById('f-title').value,
+                cost: parseFloat(document.getElementById('f-cost').value) || 0,
+                vendor: { name: document.getElementById('f-vendor').value },
+                description: document.getElementById('f-desc').value,
+            };
+            if (editId) data.status = document.getElementById('f-status').value;
+            const res = editId ? await api.put(`/maintenance/${editId}`, data) : await api.post('/maintenance', data);
+            setLoading(btn, false);
+            if (res?.ok) { toast.success('Saved!'); closeModal(); loadMaintenance(); }
+            else showAlert('modal-alert', res?.data?.message || 'Failed to save.');
+        });
+
+        async function deleteMaintenance(id) {
+            if (!confirm('Delete?')) return;
+            const res = await api.delete(`/maintenance/${id}`);
+            if (res?.ok) { toast.success('Deleted.'); loadMaintenance(); }
+            else toast.error('Delete failed.');
+        }
+
+        loadMaintenance();
+    </script>
+</body>
+
+</html>

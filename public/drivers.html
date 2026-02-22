@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivers — Fleet Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🚛</div>
+                <div><span id="sidebar-tenant-name">Fleet Co.</span><small>Fleet Management</small></div>
+            </div>
+            <nav class="sidebar-nav">
+                <p class="nav-section-label">Overview</p>
+                <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+                <p class="nav-section-label">Fleet</p>
+                <a href="/vehicles.html" class="nav-item"><span class="nav-icon">🚗</span> Vehicles</a>
+                <a href="/drivers.html" class="nav-item active"><span class="nav-icon">👤</span> Drivers</a>
+                <a href="/trips.html" class="nav-item"><span class="nav-icon">🗺️</span> Trips</a>
+                <p class="nav-section-label">Logs</p>
+                <a href="/maintenance.html" class="nav-item"><span class="nav-icon">🔧</span> Maintenance</a>
+                <a href="/fuel-logs.html" class="nav-item"><span class="nav-icon">⛽</span> Fuel Logs</a>
+                <p class="nav-section-label">System</p>
+                <a href="/api-docs" target="_blank" class="nav-item"><span class="nav-icon">📋</span> API Docs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="sidebar-user-avatar">U</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="user-name" id="sidebar-user-name">...</div>
+                        <div class="user-role" id="sidebar-user-role">role</div>
+                    </div>
+                    <button onclick="auth.logout()"
+                        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">⏻</button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger" id="hamburger-btn">☰</button>
+                    <h1 class="page-title">Drivers</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Driver</button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="filter-bar">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="form-input" id="search-input"
+                            placeholder="Search name, license, phone..." oninput="debounceSearch()">
+                    </div>
+                    <select class="form-select" style="width:160px;" id="status-filter" onchange="loadDrivers()">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="on-trip">On Trip</option>
+                        <option value="off-duty">Off Duty</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>License No.</th>
+                                <th>License Type</th>
+                                <th>License Expiry</th>
+                                <th>Status</th>
+                                <th>Trips</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drivers-body">
+                            <tr>
+                                <td colspan="9">
+                                    <div class="page-loader">
+                                        <div class="spinner"></div> Loading...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <span id="pagination-info"></span>
+                        <div class="pagination-btns" id="pagination-btns"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Driver Modal -->
+    <div class="modal-backdrop hidden" id="driver-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Add Driver</h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-alert" class="alert"></div>
+            <form id="driver-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="f-name" placeholder="Ramesh Kumar" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" class="form-input" id="f-phone" placeholder="+919876543210" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="f-email" placeholder="ramesh@acme.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-input" id="f-dob">
+                    </div>
+                </div>
+                <hr class="separator">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">License Number *</label>
+                        <input type="text" class="form-input" id="f-license" placeholder="MH1234567890" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">License Type *</label>
+                        <select class="form-select" id="f-license-type" required>
+                            <option value="">Select...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">License Expiry *</label>
+                        <input type="date" class="form-input" id="f-expiry" required>
+                    </div>
+                    <div class="form-group" id="f-status-wrap" style="display:none;">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="f-status">
+                            <option value="available">Available</option>
+                            <option value="on-trip">On Trip</option>
+                            <option value="off-duty">Off Duty</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <input type="text" class="form-input" id="f-notes" placeholder="Optional notes...">
+                </div>
+                <div style="display:flex;gap:12px;margin-top:4px;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full" id="modal-save-btn">Save Driver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireAuth();
+        const statusBadge = { available: 'badge-green', 'on-trip': 'badge-blue', 'off-duty': 'badge-amber', suspended: 'badge-red' };
+        let editId = null;
+        let currentPage = 1;
+        let searchTimeout;
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadDrivers, 400);
+        }
+
+        async function loadDrivers(page = 1) {
+            currentPage = page;
+            const search = document.getElementById('search-input').value;
+            const status = document.getElementById('status-filter').value;
+            const params = { page, limit: 15 };
+            if (search) params.search = search;
+            if (status) params.status = status;
+            const res = await api.get('/drivers', params);
+            const tbody = document.getElementById('drivers-body');
+            if (!res?.ok) { toast.error('Failed to load drivers.'); return; }
+            const { drivers, total, pages } = res.data;
+
+            if (!drivers.length) {
+                tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👤</div><h3>No drivers found</h3><p>Add your first driver to get started.</p></div></td></tr>`;
+                document.getElementById('pagination-info').textContent = '';
+                document.getElementById('pagination-btns').innerHTML = '';
+                return;
+            }
+
+            tbody.innerHTML = drivers.map(d => {
+                const expired = new Date(d.licenseExpiry) < new Date();
+                return `
+      <tr>
+        <td><span class="fw-600">${d.name}</span></td>
+        <td>${d.phone}</td>
+        <td><span class="text-accent">${d.licenseNumber}</span></td>
+        <td><span class="badge badge-purple">Type ${d.licenseType}</span></td>
+        <td><span class="${expired ? 'text-red' : ''}">${formatDate(d.licenseExpiry)} ${expired ? '⚠️' : ''}</span></td>
+        <td><span class="badge ${statusBadge[d.status] || 'badge-gray'}">${d.status}</span></td>
+        <td>${d.totalTrips}</td>
+        <td>${'⭐'.repeat(Math.round(d.rating))}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm btn-icon" onclick="openModal('${d._id}')" title="Edit">✏️</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteDriver('${d._id}')" title="Delete">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+            }).join('');
+
+            document.getElementById('pagination-info').textContent = `${total} driver${total === 1 ? '' : 's'}`;
+            const btns = document.getElementById('pagination-btns');
+            btns.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn'; prevBtn.textContent = '←'; prevBtn.disabled = page === 1;
+            prevBtn.onclick = () => loadDrivers(page - 1);
+            btns.appendChild(prevBtn);
+            for (let i = 1; i <= pages; i++) {
+                const b = document.createElement('button'); b.className = `page-btn ${i === page ? 'active' : ''}`; b.textContent = i; b.onclick = () => loadDrivers(i); btns.appendChild(b);
+            }
+            const nextBtn = document.createElement('button'); nextBtn.className = 'page-btn'; nextBtn.textContent = '→'; nextBtn.disabled = page === pages; nextBtn.onclick = () => loadDrivers(page + 1); btns.appendChild(nextBtn);
+        }
+
+        async function openModal(id = null) {
+            editId = id;
+            document.getElementById('modal-title').textContent = id ? 'Edit Driver' : 'Add Driver';
+            document.getElementById('driver-form').reset();
+            document.getElementById('f-status-wrap').style.display = id ? 'block' : 'none';
+            hideAlert('modal-alert');
+
+            if (id) {
+                const res = await api.get(`/drivers/${id}`);
+                if (!res?.ok) { toast.error('Failed to load driver.'); return; }
+                const d = res.data.driver;
+                document.getElementById('f-name').value = d.name;
+                document.getElementById('f-phone').value = d.phone;
+                document.getElementById('f-email').value = d.email || '';
+                document.getElementById('f-dob').value = d.dateOfBirth ? d.dateOfBirth.split('T')[0] : '';
+                document.getElementById('f-license').value = d.licenseNumber;
+                document.getElementById('f-license-type').value = d.licenseType;
+                document.getElementById('f-expiry').value = d.licenseExpiry ? d.licenseExpiry.split('T')[0] : '';
+                document.getElementById('f-status').value = d.status;
+                document.getElementById('f-notes').value = d.notes || '';
+            }
+            document.getElementById('driver-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('driver-modal').classList.add('hidden'); editId = null; }
+
+        document.getElementById('driver-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('modal-save-btn');
+            setLoading(btn, true, 'Saving...');
+            hideAlert('modal-alert');
+            const data = {
+                name: document.getElementById('f-name').value,
+                phone: document.getElementById('f-phone').value,
+                email: document.getElementById('f-email').value,
+                dateOfBirth: document.getElementById('f-dob').value || undefined,
+                licenseNumber: document.getElementById('f-license').value,
+                licenseType: document.getElementById('f-license-type').value,
+                licenseExpiry: document.getElementById('f-expiry').value,
+                notes: document.getElementById('f-notes').value,
+            };
+            if (editId) data.status = document.getElementById('f-status').value;
+            const res = editId ? await api.put(`/drivers/${editId}`, data) : await api.post('/drivers', data);
+            setLoading(btn, false);
+            if (res?.ok) { toast.success(editId ? 'Driver updated!' : 'Driver added!'); closeModal(); loadDrivers(currentPage); }
+            else showAlert('modal-alert', res?.data?.message || 'Failed to save driver.');
+        });
+
+        async function deleteDriver(id) {
+            if (!confirm('Delete this driver?')) return;
+            const res = await api.delete(`/drivers/${id}`);
+            if (res?.ok) { toast.success('Driver deleted.'); loadDrivers(currentPage); }
+            else toast.error(res?.data?.message || 'Delete failed.');
+        }
+
+        loadDrivers();
+    </script>
+</body>
+
+</html>

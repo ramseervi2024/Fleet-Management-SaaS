@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trips — Fleet Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🚛</div>
+                <div><span id="sidebar-tenant-name">Fleet Co.</span><small>Fleet Management</small></div>
+            </div>
+            <nav class="sidebar-nav">
+                <p class="nav-section-label">Overview</p>
+                <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+                <p class="nav-section-label">Fleet</p>
+                <a href="/vehicles.html" class="nav-item"><span class="nav-icon">🚗</span> Vehicles</a>
+                <a href="/drivers.html" class="nav-item"><span class="nav-icon">👤</span> Drivers</a>
+                <a href="/trips.html" class="nav-item active"><span class="nav-icon">🗺️</span> Trips</a>
+                <p class="nav-section-label">Logs</p>
+                <a href="/maintenance.html" class="nav-item"><span class="nav-icon">🔧</span> Maintenance</a>
+                <a href="/fuel-logs.html" class="nav-item"><span class="nav-icon">⛽</span> Fuel Logs</a>
+                <p class="nav-section-label">System</p>
+                <a href="/api-docs" target="_blank" class="nav-item"><span class="nav-icon">📋</span> API Docs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="sidebar-user-avatar">U</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="user-name" id="sidebar-user-name">...</div>
+                        <div class="user-role" id="sidebar-user-role">role</div>
+                    </div>
+                    <button onclick="auth.logout()"
+                        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">⏻</button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger" id="hamburger-btn">☰</button>
+                    <h1 class="page-title">Trips</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openModal()">+ New Trip</button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="filter-bar">
+                    <select class="form-select" style="width:180px;" id="status-filter" onchange="loadTrips()">
+                        <option value="">All Status</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="delayed">Delayed</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Trip #</th>
+                                <th>Vehicle</th>
+                                <th>Driver</th>
+                                <th>Origin</th>
+                                <th>Destination</th>
+                                <th>Scheduled Start</th>
+                                <th>Status</th>
+                                <th>Distance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trips-body">
+                            <tr>
+                                <td colspan="9">
+                                    <div class="page-loader">
+                                        <div class="spinner"></div> Loading...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <span id="pagination-info"></span>
+                        <div class="pagination-btns" id="pagination-btns"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Trip Modal -->
+    <div class="modal-backdrop hidden" id="trip-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">New Trip</h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-alert" class="alert"></div>
+            <form id="trip-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Vehicle ID *</label>
+                        <input type="text" class="form-input" id="f-vehicle" placeholder="Vehicle ObjectId" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Driver ID *</label>
+                        <input type="text" class="form-input" id="f-driver" placeholder="Driver ObjectId" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Origin Address *</label>
+                    <input type="text" class="form-input" id="f-origin" placeholder="Mumbai Warehouse, Andheri East"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Destination Address *</label>
+                    <input type="text" class="form-input" id="f-destination" placeholder="Delhi Hub, Connaught Place"
+                        required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Scheduled Start *</label>
+                        <input type="datetime-local" class="form-input" id="f-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Distance (km)</label>
+                        <input type="number" class="form-input" id="f-distance" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group" id="f-status-wrap" style="display:none;">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="f-status">
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="delayed">Delayed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <input type="text" class="form-input" id="f-notes" placeholder="Optional cargo or route notes...">
+                </div>
+                <div style="display:flex;gap:12px;margin-top:4px;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full" id="modal-save-btn">Save Trip</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireAuth();
+        const statusBadge = { scheduled: 'badge-amber', 'in-progress': 'badge-blue', completed: 'badge-green', cancelled: 'badge-red', delayed: 'badge-red' };
+        let editId = null, currentPage = 1;
+
+        async function loadTrips(page = 1) {
+            currentPage = page;
+            const status = document.getElementById('status-filter').value;
+            const params = { page, limit: 15 };
+            if (status) params.status = status;
+            const res = await api.get('/trips', params);
+            const tbody = document.getElementById('trips-body');
+            if (!res?.ok) { toast.error('Failed to load trips.'); return; }
+            const { trips, total, pages } = res.data;
+            if (!trips.length) {
+                tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🗺️</div><h3>No trips yet</h3><p>Create a trip to get started.</p></div></td></tr>`;
+                document.getElementById('pagination-info').textContent = '';
+                document.getElementById('pagination-btns').innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = trips.map(t => `
+    <tr>
+      <td><span class="fw-600 text-accent">${t.tripNumber}</span></td>
+      <td>${t.vehicle?.registrationNumber || '—'}</td>
+      <td>${t.driver?.name || '—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.origin?.address}">${t.origin?.address || '—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.destination?.address}">${t.destination?.address || '—'}</td>
+      <td>${formatDate(t.scheduledStart)}</td>
+      <td><span class="badge ${statusBadge[t.status] || 'badge-gray'}">${t.status}</span></td>
+      <td>${t.distance ? t.distance + ' km' : '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="openModal('${t._id}')" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTrip('${t._id}')" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+            document.getElementById('pagination-info').textContent = `${total} trip${total === 1 ? '' : 's'}`;
+            const btns = document.getElementById('pagination-btns');
+            btns.innerHTML = '';
+            const p = document.createElement('button'); p.className = 'page-btn'; p.textContent = '←'; p.disabled = page === 1; p.onclick = () => loadTrips(page - 1); btns.appendChild(p);
+            for (let i = 1; i <= pages; i++) { const b = document.createElement('button'); b.className = `page-btn ${i === page ? 'active' : ''}`; b.textContent = i; b.onclick = () => loadTrips(i); btns.appendChild(b); }
+            const n = document.createElement('button'); n.className = 'page-btn'; n.textContent = '→'; n.disabled = page === pages; n.onclick = () => loadTrips(page + 1); btns.appendChild(n);
+        }
+
+        async function openModal(id = null) {
+            editId = id;
+            document.getElementById('modal-title').textContent = id ? 'Edit Trip' : 'New Trip';
+            document.getElementById('trip-form').reset();
+            document.getElementById('f-status-wrap').style.display = id ? 'block' : 'none';
+            hideAlert('modal-alert');
+            if (id) {
+                const res = await api.get(`/trips/${id}`);
+                if (!res?.ok) { toast.error('Failed to load trip.'); return; }
+                const t = res.data.trip;
+                document.getElementById('f-vehicle').value = t.vehicle?._id || t.vehicle || '';
+                document.getElementById('f-driver').value = t.driver?._id || t.driver || '';
+                document.getElementById('f-origin').value = t.origin?.address || '';
+                document.getElementById('f-destination').value = t.destination?.address || '';
+                document.getElementById('f-start').value = t.scheduledStart ? t.scheduledStart.slice(0, 16) : '';
+                document.getElementById('f-distance').value = t.distance || '';
+                document.getElementById('f-status').value = t.status;
+                document.getElementById('f-notes').value = t.notes || '';
+            }
+            document.getElementById('trip-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('trip-modal').classList.add('hidden'); editId = null; }
+
+        document.getElementById('trip-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('modal-save-btn');
+            setLoading(btn, true, 'Saving...');
+            hideAlert('modal-alert');
+            const data = {
+                vehicle: document.getElementById('f-vehicle').value,
+                driver: document.getElementById('f-driver').value,
+                origin: { address: document.getElementById('f-origin').value },
+                destination: { address: document.getElementById('f-destination').value },
+                scheduledStart: document.getElementById('f-start').value,
+                distance: parseFloat(document.getElementById('f-distance').value) || 0,
+                notes: document.getElementById('f-notes').value,
+            };
+            if (editId) data.status = document.getElementById('f-status').value;
+            const res = editId ? await api.put(`/trips/${editId}`, data) : await api.post('/trips', data);
+            setLoading(btn, false);
+            if (res?.ok) { toast.success(editId ? 'Trip updated!' : 'Trip created!'); closeModal(); loadTrips(currentPage); }
+            else showAlert('modal-alert', res?.data?.message || 'Failed to save trip.');
+        });
+
+        async function deleteTrip(id) {
+            if (!confirm('Delete this trip?')) return;
+            const res = await api.delete(`/trips/${id}`);
+            if (res?.ok) { toast.success('Trip deleted.'); loadTrips(currentPage); }
+            else toast.error('Delete failed.');
+        }
+
+        loadTrips();
+    </script>
+</body>
+
+</html>

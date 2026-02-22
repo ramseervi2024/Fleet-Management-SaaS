@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Organization — Fleet Management SaaS</title>
+    <meta name="description" content="Create your Fleet Management organization and start managing your fleet.">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card" style="max-width: 520px;">
+            <div class="auth-logo">
+                <div class="logo-icon">🚛</div>
+                <h1>Create Your Fleet</h1>
+                <p>Set up your organization in seconds</p>
+            </div>
+
+            <div class="auth-tabs">
+                <a href="/index.html" class="auth-tab">Sign In</a>
+                <a href="/register.html" class="auth-tab active">Register Org</a>
+            </div>
+
+            <div id="reg-alert" class="alert"></div>
+
+            <form id="register-form">
+                <p
+                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;">
+                    Organization Details</p>
+                <div class="form-group">
+                    <label class="form-label" for="orgName">Organization Name</label>
+                    <input type="text" id="orgName" class="form-input" placeholder="Acme Fleet Corp" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="orgEmail">Org Email</label>
+                        <input type="email" id="orgEmail" class="form-input" placeholder="admin@acme.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="orgPhone">Phone (optional)</label>
+                        <input type="tel" id="orgPhone" class="form-input" placeholder="+1234567890">
+                    </div>
+                </div>
+
+                <hr class="separator">
+                <p
+                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;">
+                    Admin Account</p>
+
+                <div class="form-group">
+                    <label class="form-label" for="adminName">Your Full Name</label>
+                    <input type="text" id="adminName" class="form-input" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="adminEmail">Admin Email</label>
+                    <input type="email" id="adminEmail" class="form-input" placeholder="john@acme.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" class="form-input" placeholder="Min. 6 characters"
+                        required minlength="6">
+                </div>
+
+                <button type="submit" id="reg-btn" class="btn btn-primary" style="margin-top: 8px;">
+                    🚀 Create Organization
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/index.html">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        if (auth.isLoggedIn()) window.location.href = '/dashboard.html';
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert('reg-alert');
+            const btn = document.getElementById('reg-btn');
+            setLoading(btn, true, 'Creating organization...');
+
+            const data = {
+                orgName: document.getElementById('orgName').value,
+                orgEmail: document.getElementById('orgEmail').value,
+                orgPhone: document.getElementById('orgPhone').value,
+                adminName: document.getElementById('adminName').value,
+                adminEmail: document.getElementById('adminEmail').value,
+                adminPassword: document.getElementById('adminPassword').value,
+            };
+
+            const res = await api.post('/auth/register-tenant', data);
+            setLoading(btn, false);
+
+            if (res?.ok) {
+                auth.setSession(res.data.token, res.data.user, res.data.tenant);
+                toast.success('Organization created! Redirecting to dashboard...');
+                setTimeout(() => window.location.href = '/dashboard.html', 1000);
+            } else {
+                showAlert('reg-alert', res?.data?.message || 'Registration failed.');
+            }
+        });
+    </script>
+</body>
+
+</html>
