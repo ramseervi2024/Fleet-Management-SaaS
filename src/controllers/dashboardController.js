@@ -94,4 +94,32 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
-module.exports = { getDashboardStats };
+// @desc    Get public cross-tenant statistics
+// @route   GET /api/dashboard/public-stats
+// @access  Public
+const getPublicStats = async (req, res) => {
+    try {
+        const [
+            totalTenants,
+            totalVehicles,
+            activeTrips,
+        ] = await Promise.all([
+            require('../models/Tenant').countDocuments({ isActive: true }),
+            Vehicle.countDocuments({ isActive: true }),
+            Trip.countDocuments({ status: 'in-progress' }),
+        ]);
+
+        res.json({
+            success: true,
+            stats: {
+                tenants: totalTenants,
+                vehicles: totalVehicles,
+                activeTrips: activeTrips,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+module.exports = { getDashboardStats, getPublicStats };

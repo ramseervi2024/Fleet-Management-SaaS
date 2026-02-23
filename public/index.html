@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,70 +8,107 @@
   <meta name="description" content="Login to your Fleet Management dashboard to manage vehicles, drivers, and trips.">
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="logo-icon">🚛</div>
-      <h1>Fleet Management</h1>
-      <p>Multi-Tenant Fleet Operations Platform</p>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🚛</div>
+        <h1>Fleet Management</h1>
+        <p>Multi-Tenant Fleet Operations Platform</p>
+      </div>
+
+      <div class="auth-tabs">
+        <a href="/index.html" class="auth-tab active">Sign In</a>
+        <a href="/register.html" class="auth-tab">Register Org</a>
+      </div>
+
+      <div id="login-alert" class="alert"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="you@organization.com" required
+            autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required
+            autocomplete="current-password">
+        </div>
+        <button type="submit" id="login-btn" class="btn btn-primary" style="margin-top: 8px;">
+          Sign In to Dashboard
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>New organization? <a href="/register.html">Register here</a></p>
+        <p style="margin-top: 10px;">
+          <a href="/api-docs" target="_blank" style="color: var(--text-muted); font-size: 0.8rem;">📋 View API Docs
+            (Swagger)</a>
+        </p>
+      </div>
     </div>
 
-    <div class="auth-tabs">
-      <a href="/index.html" class="auth-tab active">Sign In</a>
-      <a href="/register.html" class="auth-tab">Register Org</a>
-    </div>
-
-    <div id="login-alert" class="alert"></div>
-
-    <form id="login-form">
-      <div class="form-group">
-        <label class="form-label" for="login-email">Email Address</label>
-        <input type="email" id="login-email" class="form-input" placeholder="you@organization.com" required autocomplete="email">
+    <div class="public-stats-section">
+      <div class="public-stats-grid">
+        <div class="public-stat-item">
+          <span class="public-stat-value" id="stat-tenants">—</span>
+          <span class="public-stat-label">Active Fleets</span>
+        </div>
+        <div class="public-stat-item">
+          <span class="public-stat-value" id="stat-vehicles">—</span>
+          <span class="public-stat-label">Vehicles</span>
+        </div>
+        <div class="public-stat-item">
+          <span class="public-stat-value" id="stat-trips">—</span>
+          <span class="public-stat-label">Live Trips</span>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="login-password">Password</label>
-        <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
-      </div>
-      <button type="submit" id="login-btn" class="btn btn-primary" style="margin-top: 8px;">
-        Sign In to Dashboard
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      <p>New organization? <a href="/register.html">Register here</a></p>
-      <p style="margin-top: 10px;">
-        <a href="/api-docs" target="_blank" style="color: var(--text-muted); font-size: 0.8rem;">📋 View API Docs (Swagger)</a>
-      </p>
     </div>
   </div>
-</div>
 
-<script src="/js/api.js"></script>
-<script>
-  // Redirect if already logged in
-  if (auth.isLoggedIn()) window.location.href = '/dashboard.html';
+  <script src="/js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (auth.isLoggedIn()) window.location.href = '/dashboard.html';
 
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideAlert('login-alert');
-    const btn = document.getElementById('login-btn');
-    setLoading(btn, true, 'Signing in...');
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert('login-alert');
+      const btn = document.getElementById('login-btn');
+      setLoading(btn, true, 'Signing in...');
 
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
 
-    const res = await api.post('/auth/login', { email, password });
-    setLoading(btn, false);
+      const res = await api.post('/auth/login', { email, password });
+      setLoading(btn, false);
 
-    if (res?.ok) {
-      auth.setSession(res.data.token, res.data.user, res.data.tenant);
-      toast.success(`Welcome back, ${res.data.user.name}!`);
-      setTimeout(() => window.location.href = '/dashboard.html', 500);
-    } else {
-      showAlert('login-alert', res?.data?.message || 'Login failed. Please try again.');
+      if (res?.ok) {
+        auth.setSession(res.data.token, res.data.user, res.data.tenant);
+        toast.success(`Welcome back, ${res.data.user.name}!`);
+        setTimeout(() => window.location.href = '/dashboard.html', 500);
+      } else {
+        showAlert('login-alert', res?.data?.message || 'Login failed. Please try again.');
+      }
+    });
+
+    async function loadPublicStats() {
+      try {
+        const res = await api.get('/dashboard/public-stats');
+        if (res?.ok) {
+          document.getElementById('stat-tenants').textContent = res.data.stats.tenants || 0;
+          document.getElementById('stat-vehicles').textContent = res.data.stats.vehicles || 0;
+          document.getElementById('stat-trips').textContent = res.data.stats.activeTrips || 0;
+        }
+      } catch (e) {
+        console.warn('Could not load public stats');
+      }
     }
-  });
-</script>
+
+    loadPublicStats();
+  </script>
 </body>
+
 </html>

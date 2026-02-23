@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboardStats } = require('../controllers/dashboardController');
+const { getDashboardStats, getPublicStats } = require('../controllers/dashboardController');
 const { protect } = require('../middleware/auth');
 
 /**
@@ -54,6 +54,7 @@ const { protect } = require('../middleware/auth');
  *       401:
  *         description: Not authenticated
  */
+router.get('/public-stats', getPublicStats);
 router.get('/stats', protect, getDashboardStats);
 
 module.exports = router;
