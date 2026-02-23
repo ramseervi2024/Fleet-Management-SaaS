@@ -109,7 +109,39 @@ const Vehicles = () => {
                                 <option value="truck">Truck</option>
                                 <option value="van">Van</option>
                                 <option value="car">Car</option>
+                                <option value="bus">Bus</option>
+                                <option value="suv">SUV</option>
+                                <option value="pickup">Pickup</option>
                             </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Fuel Type</label>
+                            <select
+                                value={formData.fuelType}
+                                onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            >
+                                <option value="diesel">Diesel</option>
+                                <option value="petrol">Petrol</option>
+                                <option value="electric">Electric</option>
+                                <option value="hybrid">Hybrid</option>
+                                <option value="cng">CNG</option>
+                                <option value="lpg">LPG</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Year</label>
+                            <input
+                                type="number"
+                                required
+                                min="1990"
+                                max={new Date().getFullYear() + 1}
+                                value={formData.year}
+                                onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -206,9 +238,11 @@ const Vehicles = () => {
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
                                             <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200">
-                                                {vehicle.driver?.split(' ').map(n => n[0]).join('')}
+                                                {(typeof vehicle.driver === 'object' ? vehicle.driver?.name : vehicle.driver)?.split(' ').map(n => n[0]).join('')}
                                             </div>
-                                            <span className="text-sm font-medium text-slate-700">{vehicle.driver}</span>
+                                            <span className="text-sm font-medium text-slate-700">
+                                                {typeof vehicle.driver === 'object' ? vehicle.driver?.name : vehicle.driver}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">

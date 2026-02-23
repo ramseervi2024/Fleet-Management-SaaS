@@ -159,15 +159,42 @@ const Drivers = () => {
                             />
                         </div>
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">License Number</label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.licenseNumber}
+                                onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="CDL-992288"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">License Type</label>
+                            <select
+                                required
+                                value={formData.licenseType}
+                                onChange={(e) => setFormData({ ...formData, licenseType: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            >
+                                <option value="A">Class A</option>
+                                <option value="B">Class B</option>
+                                <option value="C">Class C</option>
+                                <option value="D">Class D</option>
+                                <option value="E">Class E</option>
+                            </select>
+                        </div>
+                    </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">License Number</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">License Expiry Date</label>
                         <input
-                            type="text"
+                            type="date"
                             required
-                            value={formData.licenseNumber}
-                            onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                            value={formData.licenseExpiry}
+                            onChange={(e) => setFormData({ ...formData, licenseExpiry: e.target.value })}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                            placeholder="CDL-992288"
                         />
                     </div>
                     <button

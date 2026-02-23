@@ -69,17 +69,20 @@ const Logs = () => {
         // Trip
         vehicle: '',
         driver: '',
-        startLocation: '',
-        endLocation: '',
+        originAddress: '',
+        destinationAddress: '',
+        scheduledStart: '',
         distance: '',
         // Maintenance
-        type: 'Routine Check',
+        title: '',
+        type: 'routine',
         cost: '',
         scheduledDate: new Date().toISOString().split('T')[0],
         // Fuel
+        fuelType: 'diesel',
         quantity: '',
         pricePerUnit: '',
-        totalCost: '',
+        odometer: '',
         station: '',
     });
 
@@ -90,13 +93,15 @@ const Logs = () => {
                 await addTrip({
                     vehicle: formData.vehicle,
                     driver: formData.driver,
-                    startLocation: formData.startLocation,
-                    endLocation: formData.endLocation,
+                    origin: { address: formData.originAddress },
+                    destination: { address: formData.destinationAddress },
+                    scheduledStart: formData.scheduledStart,
                     distance: Number(formData.distance)
                 }).unwrap();
             } else if (activeTab === 'maintenance') {
                 await addMaintenance({
                     vehicle: formData.vehicle,
+                    title: formData.title,
                     type: formData.type,
                     cost: Number(formData.cost),
                     scheduledDate: formData.scheduledDate
@@ -105,13 +110,19 @@ const Logs = () => {
                 await addFuelLog({
                     vehicle: formData.vehicle,
                     driver: formData.driver,
+                    fuelType: formData.fuelType,
                     quantity: Number(formData.quantity),
-                    totalCost: Number(formData.totalCost),
-                    station: formData.station
+                    pricePerUnit: Number(formData.pricePerUnit),
+                    odometer: Number(formData.odometer),
+                    station: { name: formData.station }
                 }).unwrap();
             }
             setIsModalOpen(false);
-            setFormData({ vehicle: '', driver: '', startLocation: '', endLocation: '', distance: '', type: 'Routine Check', cost: '', scheduledDate: new Date().toISOString().split('T')[0], quantity: '', pricePerUnit: '', totalCost: '', station: '' });
+            setFormData({
+                vehicle: '', driver: '', originAddress: '', destinationAddress: '', scheduledStart: '', distance: '',
+                title: '', type: 'routine', cost: '', scheduledDate: new Date().toISOString().split('T')[0],
+                fuelType: 'diesel', quantity: '', pricePerUnit: '', odometer: '', station: ''
+            });
         } catch (err) {
             alert(err.data?.message || 'Action failed');
         }
@@ -196,35 +207,50 @@ const Logs = () => {
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">From</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Origin Address</label>
                                     <input
-                                        type="text" required
-                                        value={formData.startLocation}
-                                        onChange={(e) => setFormData({ ...formData, startLocation: e.target.value })}
+                                        type="text"
+                                        required
+                                        value={formData.originAddress}
+                                        onChange={(e) => setFormData({ ...formData, originAddress: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                        placeholder="Origin City"
+                                        placeholder="San Francisco, CA"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">To</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Destination Address</label>
                                     <input
-                                        type="text" required
-                                        value={formData.endLocation}
-                                        onChange={(e) => setFormData({ ...formData, endLocation: e.target.value })}
+                                        type="text"
+                                        required
+                                        value={formData.destinationAddress}
+                                        onChange={(e) => setFormData({ ...formData, destinationAddress: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                        placeholder="Destination City"
+                                        placeholder="Los Angeles, CA"
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Distance (km)</label>
-                                <input
-                                    type="number" required
-                                    value={formData.distance}
-                                    onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                    placeholder="450"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Scheduled Start</label>
+                                    <input
+                                        type="datetime-local"
+                                        required
+                                        value={formData.scheduledStart}
+                                        onChange={(e) => setFormData({ ...formData, scheduledStart: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Distance (km)</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={formData.distance}
+                                        onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                        placeholder="380"
+                                    />
+                                </div>
                             </div>
                         </>
                     )}
@@ -232,35 +258,56 @@ const Logs = () => {
                     {activeTab === 'maintenance' && (
                         <>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Maintenance Type</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Service Title</label>
                                 <input
-                                    type="text" required
-                                    value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                    type="text"
+                                    required
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                    placeholder="Engine Service"
+                                    placeholder="Engine Oil Change & Filter"
                                 />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Cost ($)</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Maintenance Type</label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                    >
+                                        <option value="routine">Routine</option>
+                                        <option value="repair">Repair</option>
+                                        <option value="inspection">Inspection</option>
+                                        <option value="tire">Tire Service</option>
+                                        <option value="oil-change">Oil Change</option>
+                                        <option value="brake">Brake Service</option>
+                                        <option value="engine">Engine Repair</option>
+                                        <option value="electrical">Electrical</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Cost</label>
                                     <input
-                                        type="number" required
+                                        type="number"
+                                        required
                                         value={formData.cost}
                                         onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
                                         placeholder="250"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Date</label>
-                                    <input
-                                        type="date" required
-                                        value={formData.scheduledDate}
-                                        onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                    />
-                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Scheduled Date</label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={formData.scheduledDate}
+                                    onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                />
                             </div>
                         </>
                     )}
@@ -269,30 +316,60 @@ const Logs = () => {
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Fuel Type</label>
+                                    <select
+                                        value={formData.fuelType}
+                                        onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                    >
+                                        <option value="diesel">Diesel</option>
+                                        <option value="petrol">Petrol</option>
+                                        <option value="electric">Electric</option>
+                                        <option value="cng">CNG</option>
+                                        <option value="lpg">LPG</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Quantity (Liters)</label>
                                     <input
-                                        type="number" required
+                                        type="number"
+                                        required
                                         value={formData.quantity}
                                         onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
                                         placeholder="50"
                                     />
                                 </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Total Cost ($)</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Price Per Unit</label>
                                     <input
-                                        type="number" required
-                                        value={formData.totalCost}
-                                        onChange={(e) => setFormData({ ...formData, totalCost: e.target.value })}
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={formData.pricePerUnit}
+                                        onChange={(e) => setFormData({ ...formData, pricePerUnit: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                        placeholder="75"
+                                        placeholder="1.45"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Odometer Reading</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={formData.odometer}
+                                        onChange={(e) => setFormData({ ...formData, odometer: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                        placeholder="125000"
                                     />
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Fuel Station</label>
                                 <input
-                                    type="text" required
+                                    type="text"
                                     value={formData.station}
                                     onChange={(e) => setFormData({ ...formData, station: e.target.value })}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
@@ -338,7 +415,9 @@ const Logs = () => {
                                                 <ChevronRight size={14} className="text-slate-400" />
                                                 <span className="text-sm font-bold text-slate-900">{trip.to}</span>
                                             </div>
-                                            <p className="text-xs font-medium text-slate-500 mt-1">{trip.vehicle} • {trip.driver}</p>
+                                            <p className="text-xs font-medium text-slate-500 mt-1">
+                                                {typeof trip.vehicle === 'object' ? trip.vehicle?.registrationNumber : trip.vehicle} • {typeof trip.driver === 'object' ? trip.driver?.name : trip.driver}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-8 px-6 lg:border-x border-slate-100">
@@ -381,7 +460,9 @@ const Logs = () => {
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="text-sm font-bold text-slate-900">{item.type}</h4>
-                                    <p className="text-xs font-medium text-slate-500">{item.vehicle} • {item.provider}</p>
+                                    <p className="text-xs font-medium text-slate-500">
+                                        {typeof item.vehicle === 'object' ? item.vehicle?.registrationNumber : item.vehicle} • {item.provider || (typeof item.vendor === 'object' ? item.vendor?.name : item.vendor)}
+                                    </p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-bold text-slate-900">{item.cost}</p>
@@ -407,7 +488,9 @@ const Logs = () => {
                                     <Droplets size={24} />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="text-sm font-bold text-slate-900">{log.vehicle}</h4>
+                                    <h4 className="text-sm font-bold text-slate-900">
+                                        {typeof log.vehicle === 'object' ? log.vehicle?.registrationNumber : log.vehicle}
+                                    </h4>
                                     <p className="text-xs font-medium text-slate-500">{log.station}</p>
                                 </div>
                                 <div className="text-center px-8 border-x border-slate-100">
