@@ -20,7 +20,7 @@ import {
     BarChart,
     Bar
 } from 'recharts';
-import { useGetDashboardStatsQuery } from '../../redux/api/fleetApi';
+import { useGetDashboardStatsQuery } from '../redux/api/fleetApi';
 
 const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }) => (
     <div className="glass-card p-6 rounded-3xl hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-300 group">
@@ -94,7 +94,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Active Vehicles"
-                    value={stats?.totalVehicles || '24/30'}
+                    value={stats?.vehicles ? `${stats.vehicles.active}/${stats.vehicles.total}` : '24/30'}
                     icon={Truck}
                     trend="up"
                     trendValue="12%"
@@ -102,7 +102,7 @@ const Dashboard = () => {
                 />
                 <StatCard
                     title="Available Drivers"
-                    value={stats?.totalDrivers || '18/22'}
+                    value={stats?.drivers ? `${stats.drivers.available}/${stats.drivers.total}` : '18/22'}
                     icon={Users}
                     trend="down"
                     trendValue="3%"
@@ -110,7 +110,7 @@ const Dashboard = () => {
                 />
                 <StatCard
                     title="On-Going Trips"
-                    value={stats?.activeTrips || '12'}
+                    value={stats?.trips?.active || '12'}
                     icon={MapPin}
                     trend="up"
                     trendValue="8%"

@@ -5,6 +5,7 @@ export const fleetApi = apiSlice.injectEndpoints({
         // Vehicles
         getVehicles: builder.query({
             query: () => '/vehicles',
+            transformResponse: (response) => response.vehicles,
             providesTags: ['Vehicle'],
         }),
         addVehicle: builder.mutation({
@@ -18,6 +19,7 @@ export const fleetApi = apiSlice.injectEndpoints({
         // Drivers
         getDrivers: builder.query({
             query: () => '/drivers',
+            transformResponse: (response) => response.drivers,
             providesTags: ['Driver'],
         }),
         addDriver: builder.mutation({
@@ -31,21 +33,49 @@ export const fleetApi = apiSlice.injectEndpoints({
         // Dashboard
         getDashboardStats: builder.query({
             query: () => '/dashboard/stats',
+            transformResponse: (response) => response.stats,
         }),
         // Trips
         getTrips: builder.query({
             query: () => '/trips',
+            transformResponse: (response) => response.trips,
             providesTags: ['Trip'],
+        }),
+        addTrip: builder.mutation({
+            query: (data) => ({
+                url: '/trips',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Trip', 'Vehicle', 'Driver'],
         }),
         // Maintenance
         getMaintenance: builder.query({
             query: () => '/maintenance',
+            transformResponse: (response) => response.logs,
             providesTags: ['Maintenance'],
+        }),
+        addMaintenance: builder.mutation({
+            query: (data) => ({
+                url: '/maintenance',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Maintenance', 'Vehicle'],
         }),
         // Fuel Logs
         getFuelLogs: builder.query({
             query: () => '/fuel-logs',
+            transformResponse: (response) => response.logs,
             providesTags: ['FuelLog'],
+        }),
+        addFuelLog: builder.mutation({
+            query: (data) => ({
+                url: '/fuel-logs',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['FuelLog'],
         }),
     }),
 });
@@ -57,6 +87,9 @@ export const {
     useAddDriverMutation,
     useGetDashboardStatsQuery,
     useGetTripsQuery,
+    useAddTripMutation,
     useGetMaintenanceQuery,
-    useGetFuelLogsQuery
+    useAddMaintenanceMutation,
+    useGetFuelLogsQuery,
+    useAddFuelLogMutation
 } = fleetApi;

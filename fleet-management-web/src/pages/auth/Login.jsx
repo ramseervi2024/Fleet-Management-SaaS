@@ -83,6 +83,22 @@ const Login = () => {
                                 </>
                             )}
                         </button>
+
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400 font-bold">Development Only</span></div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                localStorage.setItem('token', 'dev-bypass-token');
+                                window.location.href = '/';
+                            }}
+                            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all"
+                        >
+                            Explore Without Login
+                        </button>
                     </form>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 text-center">

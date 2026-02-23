@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useGetVehiclesQuery, useAddVehicleMutation } from '../redux/api/fleetApi';
 
+import Modal from '../components/common/Modal';
+
 const VehicleStatus = ({ status }) => {
     const configs = {
         Active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
@@ -34,7 +36,27 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 const Vehicles = () => {
     const { data: vehicles, isLoading } = useGetVehiclesQuery();
+    const [addVehicle, { isLoading: isAdding }] = useAddVehicleMutation();
     const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        registrationNumber: '',
+        make: '',
+        model: '',
+        type: 'truck',
+        year: new Date().getFullYear(),
+    });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await addVehicle(formData).unwrap();
+            setIsModalOpen(false);
+            setFormData({ registrationNumber: '', make: '', model: '', type: 'truck', year: new Date().getFullYear() });
+        } catch (err) {
+            alert(err.data?.message || 'Failed to add vehicle');
+        }
+    };
 
     if (isLoading) {
         return <div className="animate-pulse space-y-4">
@@ -50,11 +72,79 @@ const Vehicles = () => {
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Fleet Vehicles</h1>
                     <p className="text-slate-500 font-medium">Manage and track your primary transit assets.</p>
                 </div>
-                <button className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 hover:-translate-y-0.5 transition-all">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 hover:-translate-y-0.5 transition-all"
+                >
                     <Plus size={18} />
                     Add New Vehicle
                 </button>
             </div>
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Register New Vehicle"
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Registration Number</label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.registrationNumber}
+                                onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="ABC-1234"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Vehicle Type</label>
+                            <select
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            >
+                                <option value="truck">Truck</option>
+                                <option value="van">Van</option>
+                                <option value="car">Car</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Make</label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.make}
+                                onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="Volvo"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Model</label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.model}
+                                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="FH16"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isAdding}
+                        className="w-full py-4 bg-brand-500 text-white rounded-2xl font-bold shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isAdding ? 'Registering...' : 'Register Vehicle'}
+                    </button>
+                </form>
+            </Modal>
 
             <div className="glass-card rounded-[2rem] border-slate-100 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">

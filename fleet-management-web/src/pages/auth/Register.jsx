@@ -5,10 +5,12 @@ import { useRegisterMutation } from '../../redux/api/authApi';
 
 const Register = () => {
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        company: '',
+        orgName: '',
+        orgEmail: '',
+        orgPhone: '',
+        adminName: '',
+        adminEmail: '',
+        adminPassword: '',
     });
     const [register, { isLoading, error }] = useRegisterMutation();
     const navigate = useNavigate();
@@ -16,6 +18,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Mapping for backend registerTenant endpoint
             await register(formData).unwrap();
             navigate('/login');
         } catch (err) {
@@ -36,16 +39,48 @@ const Register = () => {
 
                 <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-1 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Organization Name</label>
+                                <div className="relative">
+                                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.orgName}
+                                        onChange={(e) => setFormData({ ...formData, orgName: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
+                                        placeholder="Fleet Corp"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Org Email</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                    <input
+                                        type="email"
+                                        required
+                                        value={formData.orgEmail}
+                                        onChange={(e) => setFormData({ ...formData, orgEmail: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
+                                        placeholder="admin@fleetcorp.com"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Admin Name</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                     <input
                                         type="text"
                                         required
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        value={formData.adminName}
+                                        onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
                                         placeholder="John Doe"
                                     />
@@ -53,33 +88,18 @@ const Register = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Company Name</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Admin Email</label>
                                 <div className="relative">
-                                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                     <input
-                                        type="text"
+                                        type="email"
                                         required
-                                        value={formData.company}
-                                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                        value={formData.adminEmail}
+                                        onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
-                                        placeholder="Logistics Inc"
+                                        placeholder="john@fleetcorp.com"
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                <input
-                                    type="email"
-                                    required
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
-                                    placeholder="name@company.com"
-                                />
                             </div>
                         </div>
 
@@ -90,8 +110,8 @@ const Register = () => {
                                 <input
                                     type="password"
                                     required
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    value={formData.adminPassword}
+                                    onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
                                     placeholder="••••••••"
                                 />

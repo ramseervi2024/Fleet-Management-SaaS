@@ -11,7 +11,8 @@ import {
     Star,
     MapPin
 } from 'lucide-react';
-import { useGetDriversQuery } from '../redux/api/fleetApi';
+import Modal from '../components/common/Modal';
+import { useGetDriversQuery, useAddDriverMutation } from '../redux/api/fleetApi';
 
 const DriverCard = ({ driver }) => (
     <div className="glass-card p-6 rounded-[2rem] border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-300 group">
@@ -35,7 +36,7 @@ const DriverCard = ({ driver }) => (
                 <div className="flex items-center text-amber-500">
                     {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} fill={i <= 4 ? "currentColor" : "none"} />)}
                 </div>
-                <span className="text-xs font-bold text-slate-400 tracking-widest">{driver.experience || '5 YRS EXP'}</span>
+                <span className="text-xs font-bold text-slate-400 tracking-widest">{driver.experience || 'NEW JOINER'}</span>
             </div>
         </div>
 
@@ -44,13 +45,13 @@ const DriverCard = ({ driver }) => (
                 <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
                     <ShieldCheck size={16} />
                 </div>
-                <span>License: {driver.license || 'CDL Class A'}</span>
+                <span>License: {driver.licenseNumber || 'N/A'}</span>
             </div>
             <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
                 <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
                     <MapPin size={16} />
                 </div>
-                <span>Assigned: {driver.vehicle || 'Volvo FH16'}</span>
+                <span>Assigned: {driver.assignedVehicle?.registrationNumber || 'Unassigned'}</span>
             </div>
         </div>
 
@@ -68,7 +69,26 @@ const DriverCard = ({ driver }) => (
 
 const Drivers = () => {
     const { data: drivers, isLoading } = useGetDriversQuery();
+    const [addDriver, { isLoading: isAdding }] = useAddDriverMutation();
     const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        licenseNumber: '',
+    });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await addDriver(formData).unwrap();
+            setIsModalOpen(false);
+            setFormData({ name: '', email: '', phone: '', licenseNumber: '' });
+        } catch (err) {
+            alert(err.data?.message || 'Failed to onboard driver');
+        }
+    };
 
     if (isLoading) {
         return <div className="space-y-6 animate-pulse">
@@ -93,11 +113,72 @@ const Drivers = () => {
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Driver Registry</h1>
                     <p className="text-slate-500 font-medium">Manage your elite team of transit professionals.</p>
                 </div>
-                <button className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 hover:-translate-y-0.5 transition-all">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 hover:-translate-y-0.5 transition-all"
+                >
                     <Plus size={18} />
                     Onboard Driver
                 </button>
             </div>
+
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Onboard New Driver">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            placeholder="John Doe"
+                        />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                            <input
+                                type="email"
+                                required
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="john@fleetpro.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                            <input
+                                type="tel"
+                                required
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                placeholder="+1 (555) 000-0000"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">License Number</label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.licenseNumber}
+                            onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                            placeholder="CDL-992288"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isAdding}
+                        className="w-full py-4 bg-brand-500 text-white rounded-2xl font-bold shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isAdding ? 'Onboarding...' : 'Onboard Driver'}
+                    </button>
+                </form>
+            </Modal>
 
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
                 <div className="relative max-w-md w-full">
