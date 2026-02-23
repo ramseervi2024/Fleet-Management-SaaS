@@ -1,11 +1,9 @@
-import { createLogger } from "redux-logger";
-import reducers from "./reducers";
 import { configureStore } from "@reduxjs/toolkit";
-
-const logger = createLogger();
+import rootReducer from "./reducers";
+import { apiSlice } from "./api/apiSlice";
 
 export const store = configureStore({
-  reducer: reducers,
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(logger),
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });

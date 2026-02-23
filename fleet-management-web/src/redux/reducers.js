@@ -1,10 +1,8 @@
-import { combineReducers } from "redux";
-import { profile } from "./profile/reducer";
-import { commonapis } from "./commonapis/reducer";
+import { combineReducers } from '@reduxjs/toolkit';
+import { apiSlice } from './api/apiSlice';
 
 const rootReducer = combineReducers({
-  profile: profile,
-  commonapis: commonapis
+  [apiSlice.reducerPath]: apiSlice.reducer,
 });
 
 export default rootReducer;
