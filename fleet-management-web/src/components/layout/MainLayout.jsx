@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import Modal from '../common/Modal';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -39,7 +42,15 @@ const SidebarLink = ({ to, icon: Icon, label, active }) => (
 
 const MainLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        toast.success('Logged out successfully');
+        navigate('/login');
+    };
 
     const menuItems = [
         { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -79,7 +90,10 @@ const MainLayout = ({ children }) => {
                     </nav>
 
                     <div className="p-4 border-t border-slate-100">
-                        <button className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all">
+                        <button
+                            onClick={() => setIsLogoutModalOpen(true)}
+                            className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+                        >
                             <LogOut size={20} />
                             {isSidebarOpen && <span className="font-medium">Logout</span>}
                         </button>
@@ -127,11 +141,40 @@ const MainLayout = ({ children }) => {
                     </div>
                 </header>
 
-                {/* Page Content */}
                 <main className="flex-1 overflow-y-auto p-4 lg:p-8">
                     {children}
                 </main>
             </div>
+
+            <Modal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                title="Confirm Logout"
+            >
+                <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <LogOut size={32} />
+                    </div>
+                    <p className="text-slate-600 font-medium text-lg mb-8">
+                        Are you sure you want to log out? <br />
+                        <span className="text-slate-400 text-sm">You will need to sign in again to access your dashboard.</span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => setIsLogoutModalOpen(false)}
+                            className="py-4 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-slate-100 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="py-4 bg-red-500 text-white font-bold rounded-2xl shadow-xl shadow-red-500/20 hover:bg-red-600 transition-all"
+                        >
+                            Yes, Logout
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
