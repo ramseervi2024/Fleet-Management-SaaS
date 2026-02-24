@@ -21,6 +21,12 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 const Tracking = () => {
     const { data: trips, isLoading } = useGetTripsQuery();
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'map' on mobile
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedTrip, setSelectedTrip] = useState(null);
+
+    const activeTrips = useMemo(() => {
+        return trips?.filter(t => t.status === 'in-progress') || [];
+    }, [trips]);
 
     const filteredTrips = activeTrips.filter(t => {
         const driverName = typeof t.driver === 'object' ? t.driver.name : t.driver;
