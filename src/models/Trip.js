@@ -29,7 +29,13 @@ const tripSchema = new mongoose.Schema(
             lat: Number,
             lng: Number,
         },
+        currentLocation: {
+            address: String,
+            lat: Number,
+            lng: Number,
+        },
         scheduledStart: { type: Date, required: true },
+
         scheduledEnd: { type: Date },
         actualStart: { type: Date },
         actualEnd: { type: Date },

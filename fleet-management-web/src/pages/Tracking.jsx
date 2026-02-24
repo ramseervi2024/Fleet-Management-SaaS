@@ -24,7 +24,7 @@ const Tracking = () => {
     const [selectedTrip, setSelectedTrip] = useState(null);
 
     const activeTrips = useMemo(() => {
-        return trips?.filter(t => t.status === 'In Transit') || [];
+        return trips?.filter(t => t.status === 'in-progress') || [];
     }, [trips]);
 
     const filteredTrips = activeTrips.filter(t => {
@@ -40,9 +40,13 @@ const Tracking = () => {
 
     const currentTrip = selectedTrip || filteredTrips[0];
 
-    const googleMapsEmbedUrl = currentTrip
-        ? `https://www.google.com/maps?q=${encodeURIComponent(currentTrip.currentLocation || currentTrip.destination?.address || currentTrip.destination)}&output=embed`
-        : '';
+    const googleMapsEmbedUrl = useMemo(() => {
+        if (!currentTrip) return '';
+        const location = currentTrip.currentLocation?.lat && currentTrip.currentLocation?.lng
+            ? `${currentTrip.currentLocation.lat},${currentTrip.currentLocation.lng}`
+            : currentTrip.currentLocation?.address || currentTrip.destination?.address || currentTrip.destination;
+        return `https://www.google.com/maps?q=${encodeURIComponent(location)}&t=k&z=15&output=embed`;
+    }, [currentTrip]);
 
     if (isLoading) {
         return (

@@ -80,6 +80,7 @@ const Logs = () => {
         originAddress: '',
         destinationAddress: '',
         scheduledStart: '',
+        status: 'scheduled',
         distance: '',
         // Maintenance
         title: '',
@@ -104,6 +105,7 @@ const Logs = () => {
                     origin: { address: formData.originAddress },
                     destination: { address: formData.destinationAddress },
                     scheduledStart: formData.scheduledStart,
+                    status: formData.status,
                     distance: Number(formData.distance)
                 }).unwrap();
             } else if (activeTab === 'maintenance') {
@@ -127,7 +129,7 @@ const Logs = () => {
             }
             setIsModalOpen(false);
             setFormData({
-                vehicle: '', driver: '', originAddress: '', destinationAddress: '', scheduledStart: '', distance: '',
+                vehicle: '', driver: '', originAddress: '', destinationAddress: '', scheduledStart: '', status: 'scheduled', distance: '',
                 title: '', type: 'routine', cost: '', scheduledDate: new Date().toISOString().split('T')[0],
                 fuelType: 'diesel', quantity: '', pricePerUnit: '', odometer: '', station: ''
             });
@@ -279,7 +281,7 @@ const Logs = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Scheduled Start</label>
                                     <input
@@ -289,6 +291,20 @@ const Logs = () => {
                                         onChange={(e) => setFormData({ ...formData, scheduledStart: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Initial Status</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                                    >
+                                        <option value="scheduled">Scheduled</option>
+                                        <option value="in-progress">In Progress (Live Tracking)</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="delayed">Delayed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Distance (km)</label>
