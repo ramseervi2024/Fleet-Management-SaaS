@@ -42,7 +42,13 @@ const createDriver = async (req, res) => {
         const driver = await Driver.create({ ...req.body, tenantId: req.tenantId });
         res.status(201).json({ success: true, message: 'Driver created successfully.', driver });
     } catch (error) {
-        if (error.code === 11000) return res.status(400).json({ success: false, message: 'License number already exists.' });
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: 'A driver with this license number already exists in your organization.'
+            });
+        }
+
         res.status(500).json({ success: false, message: error.message });
     }
 };

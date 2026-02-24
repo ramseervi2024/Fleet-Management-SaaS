@@ -66,8 +66,12 @@ const createVehicle = async (req, res) => {
         res.status(201).json({ success: true, message: 'Vehicle created successfully.', vehicle });
     } catch (error) {
         if (error.code === 11000) {
-            return res.status(400).json({ success: false, message: 'Registration number already exists.' });
+            return res.status(409).json({
+                success: false,
+                message: 'A vehicle with this registration number already exists in your fleet.'
+            });
         }
+
         res.status(500).json({ success: false, message: error.message });
     }
 };

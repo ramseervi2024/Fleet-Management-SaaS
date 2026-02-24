@@ -18,7 +18,10 @@ const registerTenant = async (req, res) => {
         // Check if tenant already exists
         const existingTenant = await Tenant.findOne({ email: orgEmail });
         if (existingTenant) {
-            return res.status(400).json({ success: false, message: 'Organization email already registered.' });
+            return res.status(409).json({
+                success: false,
+                message: 'An organization with this email already exists. Please use a different email or log in.'
+            });
         }
 
         // Create tenant
@@ -28,12 +31,17 @@ const registerTenant = async (req, res) => {
             phone: orgPhone,
         });
 
-        // Check if admin email already used globally within the tenant
-        const existingUser = await User.findOne({ tenantId: tenant._id, email: adminEmail });
-        if (existingUser) {
+        // Check if admin email already used globally
+        // Note: For multi-tenancy, we might want unique emails across the entire platform
+        const globalUser = await User.findOne({ email: adminEmail.toLowerCase() });
+        if (globalUser) {
             await Tenant.findByIdAndDelete(tenant._id);
-            return res.status(400).json({ success: false, message: 'Admin email already in use.' });
+            return res.status(409).json({
+                success: false,
+                message: 'This admin email is already registered in our system. Please use another email or sign in.'
+            });
         }
+
 
         // Create admin user
         const user = await User.create({
@@ -83,9 +91,14 @@ const login = async (req, res) => {
         // Find user across all tenants by email
         const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User with this email not found.' });
         }
+
+        if (!(await user.comparePassword(password))) {
+            return res.status(401).json({ success: false, message: 'Incorrect password. Please try again.' });
+        }
+
 
         if (!user.isActive) {
             return res.status(401).json({ success: false, message: 'Account is deactivated.' });
@@ -128,8 +141,12 @@ const registerUser = async (req, res) => {
 
         const existingUser = await User.findOne({ tenantId: req.tenantId, email: email.toLowerCase() });
         if (existingUser) {
-            return res.status(400).json({ success: false, message: 'Email already registered in this organization.' });
+            return res.status(409).json({
+                success: false,
+                message: 'A user with this email is already registered in your organization.'
+            });
         }
+
 
         // Only admin/superadmin can create admin-level users
         if (role === 'admin' && req.user.role !== 'superadmin') {
