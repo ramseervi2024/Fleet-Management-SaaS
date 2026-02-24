@@ -42,10 +42,15 @@ const SidebarLink = ({ to, icon: Icon, label, active }) => (
 );
 
 const MainLayout = ({ children }) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Close sidebar on navigation on mobile
+    React.useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [location.pathname]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -66,11 +71,19 @@ const MainLayout = ({ children }) => {
 
     return (
         <div className="flex min-h-screen bg-slate-50">
+            {/* Sidebar Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:static lg:translate-x-0",
-                    !isSidebarOpen && "-translate-x-full lg:w-20"
+                    "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:static lg:translate-x-0 overflow-y-auto",
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"
                 )}
             >
                 <div className="flex flex-col h-full">
@@ -109,7 +122,7 @@ const MainLayout = ({ children }) => {
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 hover:bg-slate-100 rounded-lg lg:hidden"
+                        className="p-2 hover:bg-slate-100 rounded-lg"
                     >
                         <Menu size={24} />
                     </button>

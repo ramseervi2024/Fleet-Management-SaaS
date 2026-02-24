@@ -102,7 +102,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
                     title="Active Vehicles"
                     value={stats?.vehicles ? `${stats.vehicles.active}/${stats.vehicles.total}` : '24/30'}
@@ -137,7 +137,7 @@ const Dashboard = () => {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 glass-card p-8 rounded-[2rem] border-slate-100">
                     <div className="flex items-center justify-between mb-8">
                         <div>
@@ -145,9 +145,9 @@ const Dashboard = () => {
                             <p className="text-slate-500 text-sm font-medium mt-1">Daily trip volume and distance metrics</p>
                         </div>
                     </div>
-                    <div className="h-[350px] w-full">
+                    <div className="h-[300px] sm:h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
+                            <AreaChart data={chartData} margin={{ left: -20, right: 10 }}>
                                 <defs>
                                     <linearGradient id="colorTrips" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.1} />
@@ -217,18 +217,18 @@ const Dashboard = () => {
                 </div>
 
                 {/* Live Operations List */}
-                <div className="lg:col-span-3 glass-card p-8 rounded-[2rem] border-slate-100">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="xl:col-span-3 glass-card p-4 sm:p-8 rounded-[2rem] border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                         <div>
                             <h3 className="text-xl font-extrabold text-slate-900">Live Operations</h3>
                             <p className="text-slate-500 text-sm font-medium mt-1">Real-time tracking of on-going fleet missions</p>
                         </div>
-                        <span className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold uppercase tracking-wider">
+                        <span className="inline-flex w-fit px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold uppercase tracking-wider">
                             {activeTrips.length} Active Trips
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {activeTrips.length > 0 ? (
                             activeTrips.map((trip, i) => (
                                 <div

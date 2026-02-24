@@ -165,12 +165,12 @@ const Logs = () => {
 
     return (
         <div className="space-y-8 pb-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight uppercase">Operations Log</h1>
-                    <p className="text-slate-500 font-medium">Historical data and real-time tracking of fleet activities.</p>
+                    <p className="text-slate-500 font-medium">Historical data and fleet activity tracking.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3">
                     <ExportButton
                         data={activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenance : fuelLogs}
                         filename={`Fleet_${activeTab}_Log`}
@@ -184,10 +184,10 @@ const Logs = () => {
                                 setIsModalOpen(true);
                             }
                         }}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all"
                     >
                         <Plus size={18} />
-                        New {activeTab === 'fuel' ? 'Fuel Log' : activeTab.slice(0, -1)} Entry
+                        New Entry
                     </button>
                 </div>
             </div>
@@ -257,31 +257,31 @@ const Logs = () => {
 
                     {activeTab === 'trips' && (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Origin Address</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Origin</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.originAddress}
                                         onChange={(e) => setFormData({ ...formData, originAddress: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                        placeholder="San Francisco, CA"
+                                        placeholder="City, State"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Destination Address</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Destination</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.destinationAddress}
                                         onChange={(e) => setFormData({ ...formData, destinationAddress: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                        placeholder="Los Angeles, CA"
+                                        placeholder="City, State"
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Scheduled Start</label>
                                     <input
@@ -464,47 +464,43 @@ const Logs = () => {
             <div id="logs-container" className="glass-card rounded-[2rem] border-slate-100 overflow-hidden min-h-[500px]">
                 {activeTab === 'trips' && (
                     <div className="divide-y divide-slate-100">
-                        {(trips || [
-                            { from: 'Rome, IT', to: 'Milan, IT', status: 'In Transit', driver: 'Marco Rossi', vehicle: 'Volvo FH16', time: 'Started 2h ago', distance: '580 km' },
-                            { from: 'Paris, FR', to: 'Lyon, FR', status: 'Completed', driver: 'Elena Smith', vehicle: 'Scania R500', time: 'Today, 14:20', distance: '460 km' },
-                            { from: 'Berlin, DE', to: 'Munich, DE', status: 'Completed', driver: 'David Berg', vehicle: 'Mercedes Actros', time: 'Yesterday', distance: '590 km' },
-                        ]).map((trip, i) => (
-                            <div key={i} className="p-6 hover:bg-slate-50 transition-all cursor-pointer group">
-                                <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                        {(trips || []).map((trip, i) => (
+                            <div key={i} className="p-4 sm:p-6 hover:bg-slate-50 transition-all cursor-pointer group">
+                                <div className="flex flex-col lg:flex-row lg:items-center gap-4 sm:gap-6">
                                     <div className="flex-1 flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center shrink-0">
-                                            <Navigation size={24} />
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
+                                            <Navigation size={20} className="sm:size-[24px]" />
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-slate-900">{trip.origin?.address || trip.from}</span>
-                                                <ChevronRight size={14} className="text-slate-400" />
-                                                <span className="text-sm font-bold text-slate-900">{trip.destination?.address || trip.to}</span>
+                                        <div className="min-w-0">
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                                <span className="text-sm font-bold text-slate-900 truncate">{trip.origin?.address || trip.from}</span>
+                                                <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                                                <span className="text-sm font-bold text-slate-900 truncate">{trip.destination?.address || trip.to}</span>
                                             </div>
-                                            <p className="text-xs font-medium text-slate-500 mt-1">
+                                            <p className="text-xs font-medium text-slate-500 mt-1 truncate">
                                                 {typeof trip.vehicle === 'object' ? trip.vehicle?.registrationNumber : trip.vehicle} • {typeof trip.driver === 'object' ? trip.driver?.name : trip.driver}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-8 px-6 lg:border-x border-slate-100">
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                                    <div className="flex flex-row items-center justify-between lg:justify-start gap-4 sm:gap-8 px-0 lg:px-6 lg:border-x border-slate-100">
+                                        <div className="text-left lg:text-center">
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Status</p>
                                             <span className={cn(
-                                                "text-xs font-bold px-2 py-1 rounded-lg",
-                                                trip.status === 'In Transit' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
+                                                "inline-block text-[11px] sm:text-xs font-bold px-2 py-0.5 sm:py-1 rounded-lg",
+                                                trip.status === 'in-progress' || trip.status === 'In Transit' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
                                             )}>{trip.status}</span>
                                         </div>
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Distance</p>
-                                            <span className="text-xs font-bold text-slate-900">{trip.distance}</span>
+                                        <div className="text-right lg:text-center">
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Distance</p>
+                                            <span className="text-[11px] sm:text-xs font-bold text-slate-900">{trip.distance}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between lg:justify-end gap-4 min-w-[120px]">
-                                        <div className="flex items-center gap-2 text-slate-400">
-                                            <Clock size={14} />
-                                            <span className="text-xs font-semibold">
+                                        <div className="flex items-center gap-2 text-slate-400 overflow-hidden">
+                                            <Clock size={14} className="shrink-0" />
+                                            <span className="text-[11px] sm:text-xs font-semibold truncate">
                                                 {trip.scheduledStart && !isNaN(new Date(trip.scheduledStart).getTime())
-                                                    ? new Date(trip.scheduledStart).toLocaleString()
+                                                    ? new Date(trip.scheduledStart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
                                                     : trip.time}
                                             </span>
                                         </div>
@@ -513,7 +509,7 @@ const Logs = () => {
                                                 setSelectedTrip(trip);
                                                 setIsMapModalOpen(true);
                                             }}
-                                            className="p-2 border border-slate-100 rounded-xl group-hover:bg-brand-500 group-hover:text-white group-hover:border-brand-500 transition-all font-bold text-xs"
+                                            className="px-3 py-1.5 sm:px-4 sm:py-2 border border-slate-100 rounded-xl group-hover:bg-brand-500 group-hover:text-white group-hover:border-brand-500 transition-all font-bold text-[11px] sm:text-xs shadow-sm bg-white"
                                         >
                                             Track
                                         </button>

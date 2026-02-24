@@ -20,12 +20,7 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 const Tracking = () => {
     const { data: trips, isLoading } = useGetTripsQuery();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedTrip, setSelectedTrip] = useState(null);
-
-    const activeTrips = useMemo(() => {
-        return trips?.filter(t => t.status === 'in-progress') || [];
-    }, [trips]);
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'map' on mobile
 
     const filteredTrips = activeTrips.filter(t => {
         const driverName = typeof t.driver === 'object' ? t.driver.name : t.driver;
@@ -60,9 +55,34 @@ const Tracking = () => {
     }
 
     return (
-        <div className="h-[calc(100vh-140px)] -mt-4 -mx-4 lg:-mx-8 flex flex-col lg:flex-row overflow-hidden">
+        <div className="h-[calc(100vh-140px)] -mt-4 -mx-4 lg:-mx-8 flex flex-col lg:flex-row overflow-hidden relative">
+            {/* Mobile View Toggle */}
+            <div className="lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[60] flex bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl shadow-2xl border border-white/50">
+                <button
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                        "px-6 py-2 rounded-xl text-sm font-bold transition-all",
+                        viewMode === 'list' ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20" : "text-slate-500"
+                    )}
+                >
+                    List
+                </button>
+                <button
+                    onClick={() => setViewMode('map')}
+                    className={cn(
+                        "px-6 py-2 rounded-xl text-sm font-bold transition-all",
+                        viewMode === 'map' ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20" : "text-slate-500"
+                    )}
+                >
+                    Map
+                </button>
+            </div>
+
             {/* Sidebar: Active Mission List */}
-            <div className="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col h-full lg:h-auto">
+            <div className={cn(
+                "w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col h-full lg:h-auto transition-all duration-300",
+                viewMode === 'map' ? "hidden lg:flex" : "flex"
+            )}>
                 <div className="p-6 border-b border-slate-100">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Live Tracking</h1>
@@ -172,29 +192,29 @@ const Tracking = () => {
 
                     {/* HUD: Top Center Info */}
                     {currentTrip && (
-                        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6">
-                            <div className="bg-white/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl shadow-slate-900/10 border border-white/50 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-brand-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30 animate-pulse">
-                                        <Zap size={24} />
+                        <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl px-2 sm:px-6 z-10">
+                            <div className="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl shadow-slate-900/10 border border-white/50 flex items-center justify-between">
+                                <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-500 text-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30 animate-pulse shrink-0">
+                                        <Zap size={20} />
                                     </div>
-                                    <div>
-                                        <h2 className="text-base font-extrabold text-slate-900">
+                                    <div className="min-w-0">
+                                        <h2 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
                                             {typeof currentTrip.vehicle === 'object' ? currentTrip.vehicle.registrationNumber : currentTrip.vehicle}
                                         </h2>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">
-                                            En route to {currentTrip.destination?.address || currentTrip.destination}
+                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1 truncate">
+                                            To {currentTrip.destination?.address || currentTrip.destination}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6 pr-4">
-                                    <div className="text-right border-r border-slate-200 pr-6">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temperature</p>
-                                        <p className="text-sm font-extrabold text-slate-900 leading-none mt-1">-4.2°C <span className="text-emerald-500 text-[10px] ml-1">Optimal</span></p>
+                                <div className="flex items-center gap-4 sm:gap-6 pr-2 sm:pr-4">
+                                    <div className="text-right border-r border-slate-200 pr-4 sm:pr-6 hidden xs:block">
+                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temp</p>
+                                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 leading-none mt-1">-4.2°C</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fuel</p>
-                                        <p className="text-sm font-extrabold text-slate-900 leading-none mt-1">72% <span className="text-slate-400 text-[10px] ml-1">840km left</span></p>
+                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fuel</p>
+                                        <p className="text-xs sm:text-sm font-extrabold text-slate-900 leading-none mt-1">72%</p>
                                     </div>
                                 </div>
                             </div>
@@ -203,18 +223,21 @@ const Tracking = () => {
 
                     {/* HUD: Left Telemetry */}
                     {currentTrip && (
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+                        <div className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 sm:gap-4 z-10">
                             {[
                                 { label: 'Speed', value: '84 km/h', icon: Navigation, color: 'text-brand-500 bg-brand-50' },
-                                { label: 'Altitude', value: '240m', icon: TrendingUp, color: 'text-indigo-500 bg-indigo-50' },
-                                { label: 'Signal', value: '4G LTE', icon: Zap, color: 'text-emerald-500 bg-emerald-50' }
+                                { label: 'Alt', value: '240m', icon: TrendingUp, color: 'text-indigo-500 bg-indigo-50', mobileHide: true },
+                                { label: 'Sig', value: '4G LTE', icon: Zap, color: 'text-emerald-500 bg-emerald-50' }
                             ].map((stat, i) => (
-                                <div key={i} className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 min-w-[120px] transition-transform hover:scale-105 cursor-pointer">
-                                    <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center mb-2", stat.color)}>
-                                        <stat.icon size={16} />
+                                <div key={i} className={cn(
+                                    "bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-xl border border-white/50 min-w-[80px] sm:min-w-[120px] transition-transform hover:scale-105 cursor-pointer",
+                                    stat.mobileHide && "hidden sm:block"
+                                )}>
+                                    <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center mb-1 sm:mb-2", stat.color)}>
+                                        <stat.icon size={14} className="sm:size-[16px]" />
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <p className="text-sm font-extrabold text-slate-900">{stat.value}</p>
+                                    <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">{stat.label}</p>
+                                    <p className="text-xs sm:text-sm font-extrabold text-slate-900">{stat.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -223,57 +246,57 @@ const Tracking = () => {
 
                 {/* Bottom Control Bar */}
                 {currentTrip && (
-                    <div className="p-6 bg-white border-t border-slate-200">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div className="flex items-center gap-8">
+                    <div className="p-4 sm:p-6 bg-white border-t border-slate-200 px-4 sm:px-8">
+                        <div className="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4 sm:gap-6">
+                            <div className="flex items-center justify-between w-full xl:w-auto gap-4 sm:gap-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-slate-100 rounded-full overflow-hidden border border-slate-200 flex items-center justify-center text-slate-400">
-                                        <User size={28} />
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-full overflow-hidden border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                        <User size={24} className="sm:size-[28px]" />
                                     </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 leading-none">Driver Profile</p>
-                                        <p className="text-sm font-bold text-slate-900 leading-none">{typeof currentTrip.driver === 'object' ? currentTrip.driver.name : currentTrip.driver}</p>
-                                        <div className="flex items-center gap-1 mt-1">
-                                            {[1, 2, 3, 4, 5].map(s => <div key={s} className="w-2 h-2 rounded-full bg-amber-400"></div>)}
-                                            <span className="text-[10px] font-bold text-slate-500 ml-1">4.9/5</span>
+                                    <div className="min-w-0">
+                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1 leading-none">Driver</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 leading-none truncate">{typeof currentTrip.driver === 'object' ? currentTrip.driver.name : currentTrip.driver}</p>
+                                        <div className="flex items-center gap-1 mt-1 hidden xs:flex">
+                                            {[1, 2, 3, 4, 5].map(s => <div key={s} className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-amber-400"></div>)}
+                                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 ml-1">4.9</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-10 w-px bg-slate-100"></div>
-                                <div className="flex items-center gap-4">
-                                    <button className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center hover:bg-emerald-100 transition-all shadow-sm">
-                                        <Phone size={20} />
+                                <div className="h-8 sm:h-10 w-px bg-slate-100"></div>
+                                <div className="flex items-center gap-2 sm:gap-4">
+                                    <button className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-emerald-100 transition-all shadow-sm">
+                                        <Phone size={18} className="sm:size-[20px]" />
                                     </button>
-                                    <button className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center hover:bg-indigo-100 transition-all shadow-sm">
-                                        <MessageSquare size={20} />
+                                    <button className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 text-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-indigo-100 transition-all shadow-sm">
+                                        <MessageSquare size={18} className="sm:size-[20px]" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 w-full max-w-lg">
+                            <div className="flex-1 w-full max-w-lg hidden md:block">
                                 <div className="flex justify-between text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
                                     <span>Route Progress</span>
                                     <span className="text-slate-900">340 km / 520 km</span>
                                 </div>
-                                <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                                <div className="h-2.5 sm:h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
                                     <div className="h-full bg-brand-500 rounded-full relative" style={{ width: '65%' }}>
                                         <div className="absolute right-0 top-0 bottom-0 w-8 bg-white/20 skew-x-12 animate-pulse"></div>
                                     </div>
                                 </div>
                                 <div className="flex justify-between mt-2">
-                                    <p className="text-[10px] font-bold text-slate-500">{currentTrip.origin?.address || currentTrip.origin}</p>
-                                    <p className="text-[10px] font-bold text-slate-900">{currentTrip.destination?.address || currentTrip.destination}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 truncate max-w-[45%]">{currentTrip.origin?.address || currentTrip.origin}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-900 truncate max-w-[45%]">{currentTrip.destination?.address || currentTrip.destination}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <div className="flex flex-col items-center gap-1 px-4 py-2 bg-rose-50 text-rose-600 rounded-2xl border border-rose-100 animate-pulse cursor-pointer">
-                                    <AlertTriangle size={18} />
-                                    <span className="text-[10px] font-bold uppercase">Incident Alert</span>
+                            <div className="flex items-center gap-3 sm:gap-4 w-full xl:w-auto">
+                                <div className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-4 py-2 bg-rose-50 text-rose-600 rounded-xl sm:rounded-2xl border border-rose-100 animate-pulse cursor-pointer">
+                                    <AlertTriangle size={16} className="sm:size-[18px]" />
+                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase">Alert</span>
                                 </div>
-                                <button className="px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all flex items-center gap-2">
-                                    Generate Log
-                                    <ChevronRight size={18} />
+                                <button className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-brand-500 text-white rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all flex items-center justify-center gap-2">
+                                    Log
+                                    <ChevronRight size={16} className="sm:size-[18px]" />
                                 </button>
                             </div>
                         </div>
