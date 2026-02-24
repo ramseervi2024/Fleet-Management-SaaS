@@ -26,23 +26,30 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-const SidebarLink = ({ to, icon: Icon, label, active }) => (
+const SidebarLink = ({ to, icon: Icon, label, active, collapsed }) => (
     <Link
         to={to}
         className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
             active
                 ? "bg-brand-500 text-white shadow-lg shadow-brand-500/30"
-                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900",
+            collapsed && "justify-center lg:px-0"
         )}
+        title={collapsed ? label : ""}
     >
-        <Icon size={20} className={cn("transition-colors", active ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
-        <span className="font-medium">{label}</span>
+        <Icon size={20} className={cn("transition-colors shrink-0", active ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
+        <span className={cn(
+            "font-medium transition-opacity duration-300",
+            collapsed && "lg:hidden"
+        )}>
+            {label}
+        </span>
     </Link>
 );
 
 const MainLayout = ({ children }) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024); // Expanded by default on desktop
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -79,11 +86,10 @@ const MainLayout = ({ children }) => {
                 />
             )}
 
-            {/* Sidebar */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:static lg:translate-x-0 overflow-y-auto",
-                    isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"
+                    "fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 lg:static lg:translate-x-0 overflow-y-auto",
+                    isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full lg:w-20 lg:translate-x-0"
                 )}
             >
                 <div className="flex flex-col h-full">
@@ -91,7 +97,14 @@ const MainLayout = ({ children }) => {
                         <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                             <Truck size={24} />
                         </div>
-                        {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-slate-900">FleetPro</span>}
+                        {(isSidebarOpen || window.innerWidth > 1024) && (
+                            <span className={cn(
+                                "text-xl font-bold tracking-tight text-slate-900 transition-opacity duration-300",
+                                !isSidebarOpen && "lg:hidden"
+                            )}>
+                                FleetPro
+                            </span>
+                        )}
                     </div>
 
                     <nav className="flex-1 px-4 space-y-1">
@@ -100,6 +113,7 @@ const MainLayout = ({ children }) => {
                                 key={item.to}
                                 {...item}
                                 active={location.pathname === item.to}
+                                collapsed={!isSidebarOpen}
                             />
                         ))}
                     </nav>
@@ -109,8 +123,13 @@ const MainLayout = ({ children }) => {
                             onClick={() => setIsLogoutModalOpen(true)}
                             className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
                         >
-                            <LogOut size={20} />
-                            {isSidebarOpen && <span className="font-medium">Logout</span>}
+                            <LogOut size={20} className="shrink-0" />
+                            <span className={cn(
+                                "font-medium transition-opacity duration-300",
+                                !isSidebarOpen && "lg:hidden"
+                            )}>
+                                Logout
+                            </span>
                         </button>
                     </div>
                 </div>

@@ -107,10 +107,10 @@ const Drivers = () => {
     }
 
     const displayedDrivers = drivers || [
-        { name: 'Marco Rossi', vehicle: 'Volvo FH16', experience: '8 YRS EXP', license: 'CDL Class A' },
-        { name: 'Elena Smith', vehicle: 'Scania R500', experience: '6 YRS EXP', license: 'CDL Class A' },
-        { name: 'David Berg', vehicle: 'Mercedes Actros', experience: '4 YRS EXP', license: 'CDL Class B' },
-        { name: 'Sarah Connor', vehicle: 'MAN TGX', experience: '12 YRS EXP', license: 'CDL Class A' },
+        { name: 'Ramesh Seervi', vehicle: 'Tata Prima', experience: '12 YRS EXP', license: 'HGV MH-12' },
+        { name: 'Gaurav Sharma', vehicle: 'Mahindra Blazo', experience: '8 YRS EXP', license: 'HGV DL-04' },
+        { name: 'Manjunath Swamy', vehicle: 'Ashok Leyland', experience: '10 YRS EXP', license: 'HGV KA-05' },
+        { name: 'Suresh Raina', vehicle: 'BharatBenz 3523R', experience: '15 YRS EXP', license: 'HGV TN-07' },
     ];
 
     return (
@@ -196,7 +196,7 @@ const Drivers = () => {
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                            placeholder="John Doe"
+                            placeholder="e.g. Ramesh Seervi"
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -208,7 +208,7 @@ const Drivers = () => {
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                placeholder="john@fleetpro.com"
+                                placeholder="ramesh@fleetpro.in"
                             />
                         </div>
                         <div>
@@ -219,7 +219,7 @@ const Drivers = () => {
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                placeholder="+1 (555) 000-0000"
+                                placeholder="+91 98765 43210"
                             />
                         </div>
                     </div>
@@ -232,7 +232,7 @@ const Drivers = () => {
                                 value={formData.licenseNumber}
                                 onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-                                placeholder="CDL-992288"
+                                placeholder="MH-12-20150012345"
                             />
                         </div>
                         <div>

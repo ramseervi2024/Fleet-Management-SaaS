@@ -85,7 +85,7 @@ const Register = () => {
                                         value={formData.adminName}
                                         onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
-                                        placeholder="John Doe"
+                                        placeholder="e.g. Ramesh"
                                     />
                                 </div>
                             </div>
@@ -100,7 +100,7 @@ const Register = () => {
                                         value={formData.adminEmail}
                                         onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none"
-                                        placeholder="john@fleetcorp.com"
+                                        placeholder="ramesh@fleetcorp.in"
                                     />
                                 </div>
                             </div>
